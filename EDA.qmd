@@ -1,0 +1,139 @@
+---
+title: "Exploring Diabetes Data Set"
+author: "Kevin Krupa (ST 558)"
+format: html
+editor: visual
+---
+
+# Introduction
+
+Before we begin exploring our data, let's give you some information about the data set and its variables, as well as the purpose of this document and how it will relate to our modeling.
+
+## Diabetes Health Indicators Data set
+
+The data set we will be using throughout the entirety of our project will be the [Diabetes Binary Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv) data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is `Diabetes_binary` - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 *feature* variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes. The next section will dive deeper into the variables that we will use.
+
+### Important Variables {#impvars}
+
+Below, is a list of the important variables I have identified that will be beneficial to explore in relation to our response variable of interest - `Diabetes_binary` (explained above):
+
+1. `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
+
+2. `HighChol` : Do you have high cholesterol? 0 = no; 1 = yes (categorical)
+
+3. `BMI` : Body Mass Index value (numeric)
+
+4. `Smoker` : Have you smoked at least 100 cigarette's in their life? 0 = no; 1 = yes (categorical)
+
+5. `Stroke` : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)
+
+6. `HeartDiseaseorAttack` : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)
+
+7. `PhysActivity` : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)
+
+8. `Fruits` : Do you consume fruit 1 or more times a day? 0 = no; 1 = yes (categorical)
+
+9. `Veggies` : Do you consume vegetables 1 or more times a day? 0 = no; 1 = yes (categorical)
+
+10. `HvyAlchoholConsump` : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)
+
+11. `GenHlth` : What would you say your general health is? 1 = excellent; 2 = very good; 3 = good; 4 = fair; 5 = poor (categorical/ordinal)
+
+12. `Sex` : What is your sex? 0 = female; 1 = male (categorical)
+
+13. `Age` : How old are you? 13-level age category 
+
+
+## Purpose
+
+The purpose of this document is to explore the variables listed above, specifically in relation to our response variable of interest `Diabetes_binary`. We will look at numerical/categorical summaries, as well as visualizations to see if we can highlight any important relationships or patterns in the data. This will translate to our modeling page, where we will take what we have learned from our data exploration and apply it to our model building. Here, we will identify potential influential variables and use them in our models to determine there true effect in classifying whether or not an individual has diabetes. Now, it is time to start exploring our data
+
+
+# Read/Manipulate Data Set
+
+Here, we will be reading in the raw *csv* file, and performing some data cleaning/manipulation tactics to prepare it for data exploration. This is also where we will load in some useful R packages that will be essential for the completion of this document.
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(ggplot2)
+
+diabetes <- as_tibble(read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")) |>
+  mutate(Diabetes_binary = as.factor(Diabetes_binary), HighBP = as.factor(HighBP),
+         HighChol = as.factor(HighChol), CholCheck = as.factor(CholCheck),
+         Smoker = as.factor(Smoker), Stroke = as.factor(Stroke),
+         HeartDiseaseorAttack = as.factor(HeartDiseaseorAttack),
+         PhysActivity = as.factor(PhysActivity), Fruits = as.factor(Fruits),
+         Veggies = as.factor(Veggies), HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
+         AnyHealthcare = as.factor(AnyHealthcare), NoDocbcCost = as.factor(NoDocbcCost),
+         GenHlth = as.factor(GenHlth), MentHlth = as.factor(MentHlth),
+         PhysHlth = as.factor(PhysHlth), DiffWalk = as.factor(DiffWalk), Sex = as.factor(Sex),
+         Age = as.factor(Age), Education = as.factor(Education), Income = as.factor(Income))
+
+```
+
+
+# Exploratory Data Analysis
+
+In this section, we will be doing our data exploration on our important variables to look at their relationship with our response variable of interest. Usually, we would split our data into training and test sets, and do EDA on the training set; however, we will do EDA on the entire data set. To start, there is only one numeric variable in this data set, `BMI` (Body Mass Index), so we will explore that first.
+
+## Numeric Variable Exploration
+
+```{r}
+diabetesBMI <- diabetes |>
+  select(Diabetes_binary, BMI)
+
+summary(diabetesBMI$BMI)
+```
+Looking at a quick summary of the `BMI` variable, we can begin to see that most values will be clustered within 12-31 (75% of values); however, there will be 25% of the values that will be spread out across a range of 31 to 98. Let's dive a bit deeper into this variable:
+
+```{r}
+bmiPlot <- ggplot(diabetesBMI) 
+
+bmiPlot + geom_histogram(aes(x = BMI), color = "Black", fill = "Red") +
+  labs(title = "Histogram of BMI Counts", x = "BMI Values") 
+
+```
+The histogram above, reaffirms the previous finding, and we can see we have right-skewed distribution. Let us explore it's relationship with the response variable:
+
+```{r}
+bmiPlot +
+  geom_jitter(aes(x = BMI, y = Diabetes_binary, color = factor(Diabetes_binary))) +
+  labs(x = "BMI Values", y = "Diabetes (0 = no, 1 = yes)",
+       title = "Scatter Plot Showing Relationship between BMI and Diabetes Status",
+       color = "Diabetes Status")
+```
+Based off of this scatter plot, there is really no glaring patterns here that I can see. Let us move to the categorical predictors to see if there is any glaring relationships.
+
+## Categorical Variable Exploration
+
+In this section, we are going to look at all of the categorical variables from our list of important variables. This will give us a better look to see which variables could be the most important in relation to the response. For a recap of variable descriptions, see the [Important Variables](#impvars) section.
+
+We are first going to look at the categorical variables with only 2-levels. Here, we will create a *2x2* contingency table from which we will turn into a data frame. We will take this data frame, group the data by the *feature* variable, and look at the the percentage of individuals who do/don't have diabetes across each level of the *feature* variable:
+
+```{r}
+diabetesCat <- diabetes |>
+  select(-BMI)
+
+results <- list()
+
+for (i in names(diabetesCat)[-c(1, 14:16, 19:21)]) {
+  var <- i
+  contTable <- table(diabetesCat$Diabetes_binary, diabetesCat[[i]])
+  contDf <- as.data.frame(contTable)
+  colnames(contDf) <- c("Diabetes", var, "Count")
+  percentages <- contDf |>
+    group_by(!!sym(var)) |>
+    mutate(Percentage = Count / sum(Count) * 100)
+  
+  results[[i]] <- percentages
+}
+
+for (i in names(results)) {
+  print(results[[i]])
+  cat("\n")
+}
+```
+
+Looking at the above data sets, we can see that there are some variables that should definitely influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only ~8% of individuals without high cholesterol have diabetes.
+
+Now, let's look at the categorical variables that have more than two levels.
