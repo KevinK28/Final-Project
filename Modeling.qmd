@@ -1,0 +1,14 @@
+---
+title: "Building Models"
+author: "Kevin Krupa (ST 558)"
+format: html
+editor: visual
+---
+
+# Introduction
+
+Before we begin building models, we will discuss the nature of this site and what its intentions are
+
+## Diabetes Health Indicators Data set
+
+The data set we will be using throughout the entirety of our project will be the [Diabetes Binary Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv) data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is `Diabetes_binary` - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 *feature* variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes. The next section will dive deeper into the variables that we will use.

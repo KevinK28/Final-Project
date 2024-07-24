@@ -160,7 +160,7 @@ ggplot(ageTable, aes(x = Age, y = Percentage, fill = Diabetes)) +
        fill = "Diabetes") 
 ```
 
-From this graph, we can see that as the age category increases, a larger percentage of individuals have Diabetes.
+From this graph, we can see that as the age category increases, a larger percentage of individuals have Diabetes. Now, let us investigate the General Health variable the same way:
 
 
 ```{r}
@@ -180,7 +180,7 @@ ggplot(genHlthTable, aes(x = GenHlth, y = Percentage, fill = Diabetes)) +
        title = "Percentage of Individuals with Diabetes for each General Health Group",
        fill = "Diabetes") 
 ```
-
+This also tells us that as our general health get's worse, the percentage of people with diabetes increases. For the last plot, let us explore the Physical Health variable:
 
 ```{r}
 physHlthTable <- table(diabetesCat$PhysHlth, diabetesCat$Diabetes_binary) |>
@@ -200,5 +200,5 @@ ggplot(physHlthTable, aes(x = PhysHlth, y = Percentage, fill = Diabetes)) +
        fill = "Diabetes") 
 ```
 
-
+The pattern in this plot is not as noticable as the others, but we can still see that has the number of days where your physical health was not good, the percentages of having diabetes increase.
 
