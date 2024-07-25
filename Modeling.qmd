@@ -19,23 +19,23 @@ We will only be interested in exploring 14 out of the 21 *feature* variables, an
 
 Below, is a list of the important variables I have identified that should be beneficial to explore in relation to our response variable of interest - `Diabetes_binary` (explained above):
 
-1. `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
+1.  `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
 
-2. `HighChol` : Do you have high cholesterol? 0 = no; 1 = yes (categorical)
+2.  `HighChol` : Do you have high cholesterol? 0 = no; 1 = yes (categorical)
 
-3. `CholCheck` : Have you had your cholesterol checked in past 5 years? 0 = no; 1 = yes (categorical)
+3.  `CholCheck` : Have you had your cholesterol checked in past 5 years? 0 = no; 1 = yes (categorical)
 
-4. `BMI` : Body Mass Index value (numeric)
+4.  `BMI` : Body Mass Index value (numeric)
 
-5. `Smoker` : Have you smoked at least 100 cigarette's in their life? 0 = no; 1 = yes (categorical)
+5.  `Smoker` : Have you smoked at least 100 cigarette's in their life? 0 = no; 1 = yes (categorical)
 
-6. `Stroke` : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)
+6.  `Stroke` : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)
 
-7. `HeartDiseaseorAttack` : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)
+7.  `HeartDiseaseorAttack` : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)
 
-8. `PhysActivity` : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)
+8.  `PhysActivity` : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)
 
-9. `HvyAlchoholConsump` : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)
+9.  `HvyAlchoholConsump` : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)
 
 10. `GenHlth` : What would you say your general health is? 1 = excellent; 2 = very good; 3 = good; 4 = fair; 5 = poor (categorical/ordinal)
 
@@ -47,6 +47,120 @@ Below, is a list of the important variables I have identified that should be ben
 
 14. `Age` : How old are you? 13-level age category (categorical)
 
-## Purpose
+## Purpose {#purp}
 
-The purpose of this document is to apply what we have learned in the exploratory data analysis page 
+The purpose of this document is to apply what we have learned in the exploratory data analysis page, and build some models to try and predict whether or not an individual will have diabetes. This document will make use of three different types of models: Logistic Regression, Classification Trees, and Random Forests. The descriptions of these models will be outlined in their respective sections. To compare these models, we will use log-loss as our criteria for defining the *best* model.
+
+Let us start with our model-building process!
+
+# Preparing the Data
+
+For the exploratory data analysis, we used the entirety of the data; however, things will be a little different here. To prepare for our model building, we will first obtain the data (only including the 15 needed variables) and then split it into a training/test set. The training set will hold 70% of the observations, whereas the testing set will include the other 30%. Splitting the data this way will help us see how our models perform on "new" data, that it has not seen before. It is a more beneficial way in looking at the robustness of our models, and provides a more realistic setting for assessment of the models generalization ability.
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(caret)
+
+diabetes <- as_tibble(read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")) |>
+  mutate(Diabetes_binary = as.factor(Diabetes_binary), HighBP = as.factor(HighBP),
+         HighChol = as.factor(HighChol), CholCheck = as.factor(CholCheck),
+         Smoker = as.factor(Smoker), Stroke = as.factor(Stroke),
+         HeartDiseaseorAttack = as.factor(HeartDiseaseorAttack),
+         PhysActivity = as.factor(PhysActivity), HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
+         GenHlth = as.factor(GenHlth), PhysHlth = as.factor(PhysHlth),
+         DiffWalk = as.factor(DiffWalk), Sex = as.factor(Sex),
+         Age = as.factor(Age)) |>
+  select(Diabetes_binary, BMI, HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack,
+         PhysActivity, HvyAlcoholConsump, GenHlth, PhysHlth, DiffWalk, Sex, Age)
+
+#Set seed for reproducibility
+set.seed(123)
+train <- sample(1:nrow(diabetes), size = nrow(diabetes)*0.7)
+test  <- dplyr::setdiff(1:nrow(diabetes), train)
+
+diabetesTrain <- diabetes[train,]
+diabetesTest <- diabetes[test,]
+```
+
+Now that we have our training and testing data sets, we can begin to build are models.
+
+# Logistic Regression Model
+
+A Logistic Regression model is a type of Generalized Linear Model (GLM), that has a response variable that is binary in nature. A binary response variable is one that has values like, success/failure, yes/no, 0/1, etc. Our response of interest, `Diabetes_binary`, is of course binary in nature due to it having values of only 0 or 1. Logistic regression models the average number of "successes" for a given set of predictor values (or probability of success). These predictions are always between 0 and 1, and we set this prediction function as:
+
+$$
+\textit{P(success|X)} = \frac{e^{X\beta}}{1 + e^{X\beta}}
+$$ Where *X* is the set of predictor values, and $\beta$ is the set of parameter coefficients. The model itself has no closed form solution, which leads to Maximum Likelihood often being used to fit parameters.
+
+If we back solve this equation, it leads us to the following formula:
+
+$$
+\textit{log}(\frac{P(success|X)}{1 - P(success|X)}) = X\beta
+$$
+
+This formula shows us how we can *link* our response to the linear combination of predictors $X\beta$. We must be careful, however, because setting up our model this way greatly influences the interpretation of our coefficients. Each $\beta$ coefficient now represents the change in log-odds of success, which can then be coerced into odds (by taking its exponential) to see how the odds of success changes as we can increase the value of its corresponding predictor by one unit/level.
+
+We will be building three different logistic regression models, using our training data set, and then evaluate each on the test set to identify the "best" option out of the three
+
+## Model 1
+
+For our first model, we are going to be using all 14 *feature* variables of interest that we identified in the EDA document.
+
+```{r}
+#Needed for computing probabilities
+diabetesLogTrain <- ifelse(diabetesTrain$Diabetes_binary == "1", "Yes", "No")
+diabetesLogTrain <- diabetesTrain |>
+  mutate(Diabetes_binary = diabetesLogTrain)
+
+trctrl <- trainControl(method = "cv", number = 10, summaryFunction = mnLogLoss,
+                       classProbs = TRUE)
+
+logOne <- train(Diabetes_binary ~ ., data = diabetesLogTrain, method = "glm", family = "binomial",
+                trControl = trctrl, tuneLength = 10, metric = "logLoss")
+
+```
+
+## Model 2
+
+The next model will only take the variables that had the biggest percentage of diabetes differences between levels, and will not include the BMI variable
+
+```{r}
+logTwo <- train(Diabetes_binary ~ HighBP + HighChol + CholCheck + Stroke + HeartDiseaseorAttack +
+                  HvyAlcoholConsump + DiffWalk, data = diabetesLogTrain, method = "glm", 
+                family = "binomial", trControl = trctrl, tuneLength = 10, metric = "logLoss")
+
+logThree$results$logLoss
+```
+
+## Model 3
+
+The last model will only use the `HighBP` and `HighChol` variables, and will include an interaction between the two
+
+```{r}
+logThree <- train(Diabetes_binary ~ HighBP*HighChol, data = diabetesLogTrain, method = "glm",
+                  family = "binomial", trControl = trctrl, tuneLength = 10, metric = "logLoss")
+```
+
+## Model Comparison
+
+As we mentioned in the [Purpose](#purp) section, we will be using Log-Loss as our criteria for selecting the best model. Therefore, we will find the log loss value for each of the three models and see which model yields the lowest values. That model will be our "best" logistic regression model candidate
+
+```{r}
+logLossOne <- round(logOne$results$logLoss, 4)
+logLossTwo <- round(logTwo$results$logLoss, 4)
+logLossThree <- round(logThree$results$logLoss, 4)
+
+paste("Log Loss Criteria Values:")
+cat("\n")
+paste("Model 1:", logLossOne)
+paste("Model 2:", logLossTwo)
+paste("Model 3:", logLossThree)
+```
+
+As we can see from the above output, Model 1 - which contained all 14 *feature* variables - has the smallest Log-Loss value. This means that Model 1 is our "best" model, and we will use it to compare against the "best" classification tree model and random forest model.
+
+# Classification Tree Models
+
+Since we have identified our "best" logistic regression model, we can now move forward with fitting a "best" classification tree model. Classification tree models are a type of tree based method with a binary response variable. We can apply this to our data, because our response of interest - `Diabetes_binary` - has values of only 0 or 1 (binary). For this method, we split up our predictor space into regions, where there are different predictions for each region. In a classification tree, our goal is to predict (classify) group membership. For a given region, we will usually use the most prevalent class as our prediction/classification.
+
+In more practical terms, we first look at all considered predictors and identify the best predictor in terms of separating the data into our two classes. After this is found, we can then begin to explore the next predictor that can do the same, and continue this process until we are capturing little to no new information.
