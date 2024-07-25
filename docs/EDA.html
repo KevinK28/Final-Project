@@ -58,24 +58,54 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="EDA_files/libs/clipboard/clipboard.min.js"></script>
-<script src="EDA_files/libs/quarto-html/quarto.js"></script>
-<script src="EDA_files/libs/quarto-html/popper.min.js"></script>
-<script src="EDA_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="EDA_files/libs/quarto-html/anchor.min.js"></script>
-<link href="EDA_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="EDA_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="EDA_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="EDA_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="EDA_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
 
 
 </head>
 
 <body class="fullcontent">
 
-<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -106,30 +136,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Before we begin exploring our data, let’s give you some information about the data set and its variables, as well as the purpose of this document and how it will relate to our modeling.</p>
 <section id="diabetes-health-indicators-data-set" class="level2">
 <h2 class="anchored" data-anchor-id="diabetes-health-indicators-data-set">Diabetes Health Indicators Data set</h2>
-<p>The data set we will be using throughout the entirety of our project will be the <a href="https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv">Diabetes Binary Health Indicators</a> data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is <code>Diabetes_binary</code> - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 <em>feature</em> variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes. The next section will dive deeper into the variables that we will use.</p>
+<p>The data set we will be using throughout the entirety of our project will be the <a href="https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv">Diabetes Binary Health Indicators</a> data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is <code>Diabetes_binary</code> - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 <em>feature</em> variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes.</p>
+<p>We will only be interested in exploring 14 out of the 21 <em>feature</em> variables, and the next section will dive deeper into those that we will use.</p>
 <section id="impvars" class="level3">
 <h3 class="anchored" data-anchor-id="impvars">Important Variables</h3>
-<p>Below, is a list of the important variables I have identified that will be beneficial to explore in relation to our response variable of interest - <code>Diabetes_binary</code> (explained above):</p>
+<p>Below, is a list of the important variables I have identified that should be beneficial to explore in relation to our response variable of interest - <code>Diabetes_binary</code> (explained above):</p>
 <ol type="1">
 <li><p><code>HighBP</code> : Do you have high blood pressure? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>HighChol</code> : Do you have high cholesterol? 0 = no; 1 = yes (categorical)</p></li>
+<li><p><code>CholCheck</code> : Have you had your cholesterol checked in past 5 years? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>BMI</code> : Body Mass Index value (numeric)</p></li>
 <li><p><code>Smoker</code> : Have you smoked at least 100 cigarette’s in their life? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>Stroke</code> : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>HeartDiseaseorAttack</code> : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>PhysActivity</code> : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)</p></li>
-<li><p><code>Fruits</code> : Do you consume fruit 1 or more times a day? 0 = no; 1 = yes (categorical)</p></li>
-<li><p><code>Veggies</code> : Do you consume vegetables 1 or more times a day? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>HvyAlchoholConsump</code> : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>GenHlth</code> : What would you say your general health is? 1 = excellent; 2 = very good; 3 = good; 4 = fair; 5 = poor (categorical/ordinal)</p></li>
+<li><p><code>PhysHlth</code> : Denotes how many days over the past 30 days you felt your physical health was bad (illness/injury)</p></li>
+<li><p><code>DiffWalk</code> : Do you have serious difficulty walking or climbing stairs? 0 = no; 1 = yes (categorical)</p></li>
 <li><p><code>Sex</code> : What is your sex? 0 = female; 1 = male (categorical)</p></li>
-<li><p><code>Age</code> : How old are you? 13-level age category</p></li>
+<li><p><code>Age</code> : How old are you? 13-level age category (categorical)</p></li>
 </ol>
 </section>
 </section>
 <section id="purpose" class="level2">
 <h2 class="anchored" data-anchor-id="purpose">Purpose</h2>
-<p>The purpose of this document is to explore the variables listed above, specifically in relation to our response variable of interest <code>Diabetes_binary</code>. We will look at numerical/categorical summaries, as well as visualizations to see if we can highlight any important relationships or patterns in the data. This will translate to our modeling page, where we will take what we have learned from our data exploration and apply it to our model building. Here, we will identify potential influential variables and use them in our models to determine there true effect in classfying whether or not an individual has diabetes. Now, it is time to start exploring our data</p>
+<p>The purpose of this document is to explore the variables listed above, specifically in relation to our response variable of interest <code>Diabetes_binary</code>. We will look at numerical/categorical summaries, as well as visualizations to see if we can highlight any important relationships or patterns in the data. This will translate to our modeling page, where we will take what we have learned from our data exploration and apply it to our model building. Here, we will identify potential influential variables and use them in our models to determine there true effect in classifying whether or not an individual has diabetes. Now, it is time to start exploring our data</p>
 </section>
 </section>
 <section id="readmanipulate-data-set" class="level1">
@@ -144,17 +176,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">HighChol =</span> <span class="fu">as.factor</span>(HighChol), <span class="at">CholCheck =</span> <span class="fu">as.factor</span>(CholCheck),</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">Smoker =</span> <span class="fu">as.factor</span>(Smoker), <span class="at">Stroke =</span> <span class="fu">as.factor</span>(Stroke),</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">HeartDiseaseorAttack =</span> <span class="fu">as.factor</span>(HeartDiseaseorAttack),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">PhysActivity =</span> <span class="fu">as.factor</span>(PhysActivity), <span class="at">Fruits =</span> <span class="fu">as.factor</span>(Fruits),</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">Veggies =</span> <span class="fu">as.factor</span>(Veggies), <span class="at">HvyAlcoholConsump =</span> <span class="fu">as.factor</span>(HvyAlcoholConsump),</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">AnyHealthcare =</span> <span class="fu">as.factor</span>(AnyHealthcare), <span class="at">NoDocbcCost =</span> <span class="fu">as.factor</span>(NoDocbcCost),</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">GenHlth =</span> <span class="fu">as.factor</span>(GenHlth), <span class="at">MentHlth =</span> <span class="fu">as.factor</span>(MentHlth),</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">PhysHlth =</span> <span class="fu">as.factor</span>(PhysHlth), <span class="at">DiffWalk =</span> <span class="fu">as.factor</span>(DiffWalk), <span class="at">Sex =</span> <span class="fu">as.factor</span>(Sex),</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">Age =</span> <span class="fu">as.factor</span>(Age), <span class="at">Education =</span> <span class="fu">as.factor</span>(Education), <span class="at">Income =</span> <span class="fu">as.factor</span>(Income))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">PhysActivity =</span> <span class="fu">as.factor</span>(PhysActivity), <span class="at">HvyAlcoholConsump =</span> <span class="fu">as.factor</span>(HvyAlcoholConsump),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">GenHlth =</span> <span class="fu">as.factor</span>(GenHlth), <span class="at">PhysHlth =</span> <span class="fu">as.factor</span>(PhysHlth),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">DiffWalk =</span> <span class="fu">as.factor</span>(DiffWalk), <span class="at">Sex =</span> <span class="fu">as.factor</span>(Sex),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">Age =</span> <span class="fu">as.factor</span>(Age)) <span class="sc">|&gt;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Diabetes_binary, BMI, HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         PhysActivity, HvyAlcoholConsump, GenHlth, PhysHlth, DiffWalk, Sex, Age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>You will notice that we are only going to be using 14 of the 21 <em>feature</em> variables from the data set. These were chosen based off of personal interest in exploring their relationship to the diabetes response.</p>
 </section>
 <section id="exploratory-data-analysis" class="level1">
 <h1>Exploratory Data Analysis</h1>
-<p>In this section, we will be doing our data exploration on our important variables to look at their relationship with our response variable of interest. To start, there is only one numeric variable in this data set, <code>BMI</code> (Body Mass Index), so we will explore that first.</p>
+<p>In this section, we will be doing our data exploration on our important variables to look at their relationship with our response variable of interest. Usually, we would split our data into training and test sets, and do EDA on the training set; however, we will do EDA on the entire data set. To start, there is only one numeric variable in this data set, <code>BMI</code> (Body Mass Index), so we will explore that first.</p>
 <section id="numeric-variable-exploration" class="level2">
 <h2 class="anchored" data-anchor-id="numeric-variable-exploration">Numeric Variable Exploration</h2>
 <div class="cell">
@@ -196,13 +229,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="categorical-variable-exploration" class="level2">
 <h2 class="anchored" data-anchor-id="categorical-variable-exploration">Categorical Variable Exploration</h2>
 <p>In this section, we are going to look at all of the categorical variables from our list of important variables. This will give us a better look to see which variables could be the most important in relation to the response. For a recap of variable descriptions, see the <a href="#impvars">Important Variables</a> section.</p>
+<p>We are first going to look at the categorical variables with only 2-levels. Here, we will create a <em>2x2</em> contingency table from which we will turn into a data frame. We will take this data frame, group the data by the <em>feature</em> variable, and look at the the percentage of individuals who do/don’t have diabetes across each level of the <em>feature</em> variable:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>diabetesCat <span class="ot">&lt;-</span> diabetes <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>BMI)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">names</span>(diabetesCat)[<span class="sc">-</span><span class="dv">1</span>]) {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">names</span>(diabetesCat)[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">14</span>)]) {</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  var <span class="ot">&lt;-</span> i</span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  contTable <span class="ot">&lt;-</span> <span class="fu">table</span>(diabetesCat<span class="sc">$</span>Diabetes_binary, diabetesCat[[i]])</span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  contDf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(contTable)</span>
@@ -216,7 +250,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">names</span>(results)) {</span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(results[[i]])</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 4
 # Groups:   HighBP [2]
@@ -226,6 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0        8742       6.04
 3 0        1       82225      75.6 
 4 1        1       26604      24.4 
+
 # A tibble: 4 × 4
 # Groups:   HighChol [2]
   Diabetes HighChol  Count Percentage
@@ -234,6 +270,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0         11660       7.98
 3 0        1         83905      78.0 
 4 1        1         23686      22.0 
+
 # A tibble: 4 × 4
 # Groups:   CholCheck [2]
   Diabetes CholCheck  Count Percentage
@@ -242,6 +279,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0            241       2.54
 3 0        1         209105      85.6 
 4 1        1          35105      14.4 
+
 # A tibble: 4 × 4
 # Groups:   Smoker [2]
   Diabetes Smoker  Count Percentage
@@ -250,6 +288,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0       17029       12.1
 3 0        1       94106       83.7
 4 1        1       18317       16.3
+
 # A tibble: 4 × 4
 # Groups:   Stroke [2]
   Diabetes Stroke  Count Percentage
@@ -258,6 +297,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0       32078       13.2
 3 0        1        7024       68.2
 4 1        1        3268       31.8
+
 # A tibble: 4 × 4
 # Groups:   HeartDiseaseorAttack [2]
   Diabetes HeartDiseaseorAttack  Count Percentage
@@ -266,6 +306,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0                     27468       12.0
 3 0        1                     16015       67.0
 4 1        1                      7878       33.0
+
 # A tibble: 4 × 4
 # Groups:   PhysActivity [2]
   Diabetes PhysActivity  Count Percentage
@@ -274,22 +315,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0             13059       21.1
 3 0        1            169633       88.4
 4 1        1             22287       11.6
-# A tibble: 4 × 4
-# Groups:   Fruits [2]
-  Diabetes Fruits  Count Percentage
-  &lt;fct&gt;    &lt;fct&gt;   &lt;int&gt;      &lt;dbl&gt;
-1 0        0       78129       84.2
-2 1        0       14653       15.8
-3 0        1      140205       87.1
-4 1        1       20693       12.9
-# A tibble: 4 × 4
-# Groups:   Veggies [2]
-  Diabetes Veggies  Count Percentage
-  &lt;fct&gt;    &lt;fct&gt;    &lt;int&gt;      &lt;dbl&gt;
-1 0        0        39229       82.0
-2 1        0         8610       18.0
-3 0        1       179105       87.0
-4 1        1        26736       13.0
+
 # A tibble: 4 × 4
 # Groups:   HvyAlcoholConsump [2]
   Diabetes HvyAlcoholConsump  Count Percentage
@@ -298,66 +324,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0                  34514      14.4 
 3 0        1                  13424      94.2 
 4 1        1                    832       5.84
-# A tibble: 4 × 4
-# Groups:   AnyHealthcare [2]
-  Diabetes AnyHealthcare  Count Percentage
-  &lt;fct&gt;    &lt;fct&gt;          &lt;int&gt;      &lt;dbl&gt;
-1 0        0              10995       88.5
-2 1        0               1422       11.5
-3 0        1             207339       85.9
-4 1        1              33924       14.1
-# A tibble: 4 × 4
-# Groups:   NoDocbcCost [2]
-  Diabetes NoDocbcCost  Count Percentage
-  &lt;fct&gt;    &lt;fct&gt;        &lt;int&gt;      &lt;dbl&gt;
-1 0        0           200722       86.4
-2 1        0            31604       13.6
-3 0        1            17612       82.5
-4 1        1             3742       17.5
-# A tibble: 10 × 4
-# Groups:   GenHlth [5]
-   Diabetes GenHlth Count Percentage
-   &lt;fct&gt;    &lt;fct&gt;   &lt;int&gt;      &lt;dbl&gt;
- 1 0        1       44159      97.5 
- 2 1        1        1140       2.52
- 3 0        2       82703      92.8 
- 4 1        2        6381       7.16
- 5 0        3       62189      82.2 
- 6 1        3       13457      17.8 
- 7 0        4       21780      69.0 
- 8 1        4        9790      31.0 
- 9 0        5        7503      62.1 
-10 1        5        4578      37.9 
-# A tibble: 62 × 4
-# Groups:   MentHlth [31]
-   Diabetes MentHlth  Count Percentage
-   &lt;fct&gt;    &lt;fct&gt;     &lt;int&gt;      &lt;dbl&gt;
- 1 0        0        152277      86.7 
- 2 1        0         23403      13.3 
- 3 0        1          7726      90.5 
- 4 1        1           812       9.51
- 5 0        2         11546      88.4 
- 6 1        2          1508      11.6 
- 7 0        3          6457      87.5 
- 8 1        3           924      12.5 
- 9 0        4          3300      87.1 
-10 1        4           489      12.9 
-# ℹ 52 more rows
-# A tibble: 62 × 4
-# Groups:   PhysHlth [31]
-   Diabetes PhysHlth  Count Percentage
-   &lt;fct&gt;    &lt;fct&gt;     &lt;int&gt;      &lt;dbl&gt;
- 1 0        0        143312       89.5
- 2 1        0         16740       10.5
- 3 0        1         10200       89.6
- 4 1        1          1188       10.4
- 5 0        2         12736       86.3
- 6 1        2          2028       13.7
- 7 0        3          7206       84.8
- 8 1        3          1289       15.2
- 9 0        4          3779       83.2
-10 1        4           763       16.8
-# ℹ 52 more rows
+
 # A tibble: 4 × 4
 # Groups:   DiffWalk [2]
   Diabetes DiffWalk  Count Percentage
@@ -366,6 +333,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 2 1        0         22225       10.5
 3 0        1         29554       69.3
 4 1        1         13121       30.7
+
 # A tibble: 4 × 4
 # Groups:   Sex [2]
   Diabetes Sex    Count Percentage
@@ -373,65 +341,80 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 1 0        0     123563       87.0
 2 1        0      18411       13.0
 3 0        1      94771       84.8
-4 1        1      16935       15.2
-# A tibble: 26 × 4
-# Groups:   Age [13]
-   Diabetes Age   Count Percentage
-   &lt;fct&gt;    &lt;fct&gt; &lt;int&gt;      &lt;dbl&gt;
- 1 0        1      5622      98.6 
- 2 1        1        78       1.37
- 3 0        2      7458      98.2 
- 4 1        2       140       1.84
- 5 0        3     10809      97.2 
- 6 1        3       314       2.82
- 7 0        4     13197      95.5 
- 8 1        4       626       4.53
- 9 0        5     15106      93.5 
-10 1        5      1051       6.50
-# ℹ 16 more rows
-# A tibble: 12 × 4
-# Groups:   Education [6]
-   Diabetes Education Count Percentage
-   &lt;fct&gt;    &lt;fct&gt;     &lt;int&gt;      &lt;dbl&gt;
- 1 0        1           127      73.0 
- 2 1        1            47      27.0 
- 3 0        2          2860      70.7 
- 4 1        2          1183      29.3 
- 5 0        3          7182      75.8 
- 6 1        3          2296      24.2 
- 7 0        4         51684      82.4 
- 8 1        4         11066      17.6 
- 9 0        5         59556      85.2 
-10 1        5         10354      14.8 
-11 0        6         96925      90.3 
-12 1        6         10400       9.69
-# A tibble: 16 × 4
-# Groups:   Income [8]
-   Diabetes Income Count Percentage
-   &lt;fct&gt;    &lt;fct&gt;  &lt;int&gt;      &lt;dbl&gt;
- 1 0        1       7428      75.7 
- 2 1        1       2383      24.3 
- 3 0        2       8697      73.8 
- 4 1        2       3086      26.2 
- 5 0        3      12426      77.7 
- 6 1        3       3568      22.3 
- 7 0        4      16081      79.9 
- 8 1        4       4054      20.1 
- 9 0        5      21379      82.6 
-10 1        5       4504      17.4 
-11 0        6      31179      85.5 
-12 1        6       5291      14.5 
-13 0        7      37954      87.8 
-14 1        7       5265      12.2 
-15 0        8      83190      92.0 
-16 1        8       7195       7.96</code></pre>
+4 1        1      16935       15.2</code></pre>
 </div>
 </div>
+<p>Looking at the above data sets, we can see that there are some variables that should influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the <code>HvyAlcoholConsump</code> data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only ~8% of individuals without high cholesterol have diabetes.</p>
+<p>Now, let’s look at the categorical variables that have more than two levels. We will first look at the age variable. Let us do the same thing we did above, but as bar plots. We will see how the percentages of people with diabetes changes across the different age groups.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ageTable <span class="ot">&lt;-</span> <span class="fu">table</span>(diabetesCat<span class="sc">$</span>Age, diabetesCat<span class="sc">$</span>Diabetes_binary) <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ageTable) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Age"</span>, <span class="st">"Diabetes"</span>, <span class="st">"Count"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>ageTable <span class="ot">&lt;-</span> ageTable <span class="sc">|&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Age) <span class="sc">|&gt;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Percentage =</span> Count <span class="sc">/</span> <span class="fu">sum</span>(Count) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ageTable, <span class="fu">aes</span>(<span class="at">x =</span> Age, <span class="at">y =</span> Percentage, <span class="at">fill =</span> Diabetes)) <span class="sc">+</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Age Category"</span>, <span class="at">y =</span> <span class="st">"Percentage"</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Percentage of Individuals with Diabetes for each Age Group"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Diabetes"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="EDA_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>From this graph, we can see that as the age category increases, a larger percentage of individuals have Diabetes. Now, let us investigate the General Health variable the same way:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>genHlthTable <span class="ot">&lt;-</span> <span class="fu">table</span>(diabetesCat<span class="sc">$</span>GenHlth, diabetesCat<span class="sc">$</span>Diabetes_binary) <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(genHlthTable) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"GenHlth"</span>, <span class="st">"Diabetes"</span>, <span class="st">"Count"</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>genHlthTable <span class="ot">&lt;-</span> genHlthTable <span class="sc">|&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(GenHlth) <span class="sc">|&gt;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Percentage =</span> Count <span class="sc">/</span> <span class="fu">sum</span>(Count) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genHlthTable, <span class="fu">aes</span>(<span class="at">x =</span> GenHlth, <span class="at">y =</span> Percentage, <span class="at">fill =</span> Diabetes)) <span class="sc">+</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"General Health Category"</span>, <span class="at">y =</span> <span class="st">"Percentage"</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Percentage of Individuals with Diabetes for each General Health Group"</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Diabetes"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="EDA_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This also tells us that as our general health get’s worse, the percentage of people with diabetes increases. For the last plot, let us explore the Physical Health variable:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>physHlthTable <span class="ot">&lt;-</span> <span class="fu">table</span>(diabetesCat<span class="sc">$</span>PhysHlth, diabetesCat<span class="sc">$</span>Diabetes_binary) <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(physHlthTable) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"PhysHlth"</span>, <span class="st">"Diabetes"</span>, <span class="st">"Count"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>physHlthTable <span class="ot">&lt;-</span> physHlthTable <span class="sc">|&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(PhysHlth) <span class="sc">|&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Percentage =</span> Count <span class="sc">/</span> <span class="fu">sum</span>(Count) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(physHlthTable, <span class="fu">aes</span>(<span class="at">x =</span> PhysHlth, <span class="at">y =</span> Percentage, <span class="at">fill =</span> Diabetes)) <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Physical Health Category"</span>, <span class="at">y =</span> <span class="st">"Percentage"</span>,</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Percentage of Individuals with Diabetes for each Physical Health Group"</span>,</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Diabetes"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="EDA_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The pattern in this plot is not as noticeable as the others, but we can still see that has the number of days where your physical health was not good, the percentages of having diabetes increase.</p>
+
+
 </section>
 </section>
 
-</main>
-<!-- /main column -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

@@ -11,11 +11,13 @@ Before we begin exploring our data, let's give you some information about the da
 
 ## Diabetes Health Indicators Data set
 
-The data set we will be using throughout the entirety of our project will be the [Diabetes Binary Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv) data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is `Diabetes_binary` - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 *feature* variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes. The next section will dive deeper into the variables that we will use.
+The data set we will be using throughout the entirety of our project will be the [Diabetes Binary Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv) data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is `Diabetes_binary` - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 *feature* variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes.
+
+We will only be interested in exploring 14 out of the 21 *feature* variables, and the next section will dive deeper into those that we will use.
 
 ### Important Variables {#impvars}
 
-Below, is a list of the important variables I have identified that will be beneficial to explore in relation to our response variable of interest - `Diabetes_binary` (explained above):
+Below, is a list of the important variables I have identified that should be beneficial to explore in relation to our response variable of interest - `Diabetes_binary` (explained above):
 
 1. `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
 
@@ -64,16 +66,16 @@ diabetes <- as_tibble(read_csv("diabetes_binary_health_indicators_BRFSS2015.csv"
          HighChol = as.factor(HighChol), CholCheck = as.factor(CholCheck),
          Smoker = as.factor(Smoker), Stroke = as.factor(Stroke),
          HeartDiseaseorAttack = as.factor(HeartDiseaseorAttack),
-         PhysActivity = as.factor(PhysActivity), Fruits = as.factor(Fruits),
-         Veggies = as.factor(Veggies), HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
-         AnyHealthcare = as.factor(AnyHealthcare), NoDocbcCost = as.factor(NoDocbcCost),
-         GenHlth = as.factor(GenHlth), MentHlth = as.factor(MentHlth),
-         PhysHlth = as.factor(PhysHlth), DiffWalk = as.factor(DiffWalk), Sex = as.factor(Sex),
-         Age = as.factor(Age), Education = as.factor(Education), Income = as.factor(Income)) |>
+         PhysActivity = as.factor(PhysActivity), HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
+         GenHlth = as.factor(GenHlth), PhysHlth = as.factor(PhysHlth),
+         DiffWalk = as.factor(DiffWalk), Sex = as.factor(Sex),
+         Age = as.factor(Age)) |>
   select(Diabetes_binary, BMI, HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack,
          PhysActivity, HvyAlcoholConsump, GenHlth, PhysHlth, DiffWalk, Sex, Age)
 
 ```
+
+You will notice that we are only going to be using 14 of the 21 *feature* variables from the data set. These were chosen based off of personal interest in exploring their relationship to the diabetes response.
 
 
 # Exploratory Data Analysis
@@ -138,7 +140,7 @@ for (i in names(results)) {
 }
 ```
 
-Looking at the above data sets, we can see that there are some variables that should definitely influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only ~8% of individuals without high cholesterol have diabetes.
+Looking at the above data sets, we can see that there are some variables that should influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only ~8% of individuals without high cholesterol have diabetes.
 
 Now, let's look at the categorical variables that have more than two levels. We will first look at the age variable. Let us do the same thing we did above, but as bar plots. We will see how the percentages of people with diabetes changes across the different age groups. 
 
@@ -200,5 +202,5 @@ ggplot(physHlthTable, aes(x = PhysHlth, y = Percentage, fill = Diabetes)) +
        fill = "Diabetes") 
 ```
 
-The pattern in this plot is not as noticable as the others, but we can still see that has the number of days where your physical health was not good, the percentages of having diabetes increase.
+The pattern in this plot is not as noticeable as the others, but we can still see that has the number of days where your physical health was not good, the percentages of having diabetes increase.
 

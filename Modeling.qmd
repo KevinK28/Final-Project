@@ -11,4 +11,42 @@ Before we begin building models, we will discuss the nature of this site and wha
 
 ## Diabetes Health Indicators Data set
 
-The data set we will be using throughout the entirety of our project will be the [Diabetes Binary Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv) data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is `Diabetes_binary` - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 *feature* variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes. The next section will dive deeper into the variables that we will use.
+The data set we will be using throughout the entirety of our project will be the [Diabetes Binary Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_health_indicators_BRFSS2015.csv) data set. This is a clean data set of 253,680 survey responses conducted by the CDC, in which the target variable is `Diabetes_binary` - where 0 denotes no diabetes, and 1 denotes pre-diabetes or diabetes. Also included in this data set, are 21 *feature* variables, that are not balanced, in which can hopefully be used to explain whether or not a person will have diabetes.
+
+We will only be interested in exploring 14 out of the 21 *feature* variables, and the next section will dive deeper into those that we will use.
+
+### Important Variables {#impvars}
+
+Below, is a list of the important variables I have identified that should be beneficial to explore in relation to our response variable of interest - `Diabetes_binary` (explained above):
+
+1. `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
+
+2. `HighChol` : Do you have high cholesterol? 0 = no; 1 = yes (categorical)
+
+3. `CholCheck` : Have you had your cholesterol checked in past 5 years? 0 = no; 1 = yes (categorical)
+
+4. `BMI` : Body Mass Index value (numeric)
+
+5. `Smoker` : Have you smoked at least 100 cigarette's in their life? 0 = no; 1 = yes (categorical)
+
+6. `Stroke` : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)
+
+7. `HeartDiseaseorAttack` : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)
+
+8. `PhysActivity` : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)
+
+9. `HvyAlchoholConsump` : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)
+
+10. `GenHlth` : What would you say your general health is? 1 = excellent; 2 = very good; 3 = good; 4 = fair; 5 = poor (categorical/ordinal)
+
+11. `PhysHlth` : Denotes how many days over the past 30 days you felt your physical health was bad (illness/injury)
+
+12. `DiffWalk` : Do you have serious difficulty walking or climbing stairs? 0 = no; 1 = yes (categorical)
+
+13. `Sex` : What is your sex? 0 = female; 1 = male (categorical)
+
+14. `Age` : How old are you? 13-level age category (categorical)
+
+## Purpose
+
+The purpose of this document is to apply what we have learned in the exploratory data analysis page 
