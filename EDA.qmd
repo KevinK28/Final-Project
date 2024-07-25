@@ -19,23 +19,23 @@ We will only be interested in exploring 14 out of the 21 *feature* variables, an
 
 Below, is a list of the important variables I have identified that should be beneficial to explore in relation to our response variable of interest - `Diabetes_binary` (explained above):
 
-1. `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
+1.  `HighBP` : Do you have high blood pressure? 0 = no; 1 = yes (categorical)
 
-2. `HighChol` : Do you have high cholesterol? 0 = no; 1 = yes (categorical)
+2.  `HighChol` : Do you have high cholesterol? 0 = no; 1 = yes (categorical)
 
-3. `CholCheck` : Have you had your cholesterol checked in past 5 years? 0 = no; 1 = yes (categorical)
+3.  `CholCheck` : Have you had your cholesterol checked in past 5 years? 0 = no; 1 = yes (categorical)
 
-4. `BMI` : Body Mass Index value (numeric)
+4.  `BMI` : Body Mass Index value (numeric)
 
-5. `Smoker` : Have you smoked at least 100 cigarette's in their life? 0 = no; 1 = yes (categorical)
+5.  `Smoker` : Have you smoked at least 100 cigarette's in their life? 0 = no; 1 = yes (categorical)
 
-6. `Stroke` : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)
+6.  `Stroke` : Have you ever been told you had a stroke? 0 = no; 1 = yes (categorical)
 
-7. `HeartDiseaseorAttack` : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)
+7.  `HeartDiseaseorAttack` : Have you ever had coronary heart disease (CHD) or myocardial infarction (MI)? 0 = no; 1 = yes (categorical)
 
-8. `PhysActivity` : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)
+8.  `PhysActivity` : Not including you job, ave you done any physical activity in past 30 days? 0 = no; 1 = yes (categorical)
 
-9. `HvyAlchoholConsump` : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)
+9.  `HvyAlchoholConsump` : Do you consume at least 14 (men) or at least 7 (women) drinks per week? 0 = no; 1 = yes (categorical)
 
 10. `GenHlth` : What would you say your general health is? 1 = excellent; 2 = very good; 3 = good; 4 = fair; 5 = poor (categorical/ordinal)
 
@@ -47,11 +47,9 @@ Below, is a list of the important variables I have identified that should be ben
 
 14. `Age` : How old are you? 13-level age category (categorical)
 
-
 ## Purpose
 
 The purpose of this document is to explore the variables listed above, specifically in relation to our response variable of interest `Diabetes_binary`. We will look at numerical/categorical summaries, as well as visualizations to see if we can highlight any important relationships or patterns in the data. This will translate to our modeling page, where we will take what we have learned from our data exploration and apply it to our model building. Here, we will identify potential influential variables and use them in our models to determine there true effect in classifying whether or not an individual has diabetes. Now, it is time to start exploring our data
-
 
 # Read/Manipulate Data Set
 
@@ -62,21 +60,36 @@ library(tidyverse)
 library(ggplot2)
 
 diabetes <- as_tibble(read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")) |>
-  mutate(Diabetes_binary = as.factor(Diabetes_binary), HighBP = as.factor(HighBP),
-         HighChol = as.factor(HighChol), CholCheck = as.factor(CholCheck),
-         Smoker = as.factor(Smoker), Stroke = as.factor(Stroke),
+  mutate(Diabetes_binary = as.factor(Diabetes_binary),
+         HighBP = as.factor(HighBP),
+         HighChol = as.factor(HighChol),
+         CholCheck = as.factor(CholCheck),
+         Smoker = as.factor(Smoker),
+         Stroke = as.factor(Stroke),
          HeartDiseaseorAttack = as.factor(HeartDiseaseorAttack),
-         PhysActivity = as.factor(PhysActivity), HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
+         PhysActivity = as.factor(PhysActivity),
+         HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
          GenHlth = as.factor(GenHlth), PhysHlth = as.factor(PhysHlth),
          DiffWalk = as.factor(DiffWalk), Sex = as.factor(Sex),
          Age = as.factor(Age)) |>
   select(Diabetes_binary, BMI, HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack,
          PhysActivity, HvyAlcoholConsump, GenHlth, PhysHlth, DiffWalk, Sex, Age)
 
+levels(diabetes$Diabetes_binary)      <- c("No", "Yes")
+levels(diabetes$HighBP)               <- c("No", "Yes")
+levels(diabetes$HighChol)             <- c("No", "Yes")
+levels(diabetes$CholCheck)            <- c("No", "Yes")
+levels(diabetes$Smoker)               <- c("No", "Yes")
+levels(diabetes$Stroke)               <- c("No", "Yes")
+levels(diabetes$HeartDiseaseorAttack) <- c("No", "Yes")
+levels(diabetes$PhysActivity)         <- c("No", "Yes")
+levels(diabetes$HvyAlcoholConsump)    <- c("No", "Yes")
+levels(diabetes$GenHlth)              <- c("Excellent", "Very Good", "Good", "Fair", "Poor")
+levels(diabetes$DiffWalk)             <- c("No", "Yes")
+
 ```
 
-You will notice that we are only going to be using 14 of the 21 *feature* variables from the data set. These were chosen based off of personal interest in exploring their relationship to the diabetes response.
-
+As mentioned above, we are only going to be using 14 of the 21 *feature* variables from the data set. These were chosen based off of personal interest in exploring their relationship to the diabetes response.
 
 # Exploratory Data Analysis
 
@@ -90,6 +103,7 @@ diabetesBMI <- diabetes |>
 
 summary(diabetesBMI$BMI)
 ```
+
 Looking at a quick summary of the `BMI` variable, we can begin to see that most values will be clustered within 12-31 (75% of values); however, there will be 25% of the values that will be spread out across a range of 31 to 98. Let's dive a bit deeper into this variable:
 
 ```{r}
@@ -99,7 +113,8 @@ bmiPlot + geom_histogram(aes(x = BMI), color = "Black", fill = "Red") +
   labs(title = "Histogram of BMI Counts", x = "BMI Values") 
 
 ```
-The histogram above, reaffirms the previous finding, and we can see we have right-skewed distribution. Let us explore it's relationship with the response variable:
+
+The histogram above, reaffirms the previous finding, and we can see we have right-skewed distribution. Let us explore its relationship with the response variable:
 
 ```{r}
 bmiPlot +
@@ -108,6 +123,7 @@ bmiPlot +
        title = "Scatter Plot Showing Relationship between BMI and Diabetes Status",
        color = "Diabetes Status")
 ```
+
 Based off of this scatter plot, there is really no glaring patterns here that I can see. Let us move to the categorical predictors to see if there is any glaring relationships.
 
 ## Categorical Variable Exploration
@@ -140,9 +156,9 @@ for (i in names(results)) {
 }
 ```
 
-Looking at the above data sets, we can see that there are some variables that should influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only ~8% of individuals without high cholesterol have diabetes.
+Looking at the above data sets, we can see that there are some variables that should influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only \~8% of individuals without high cholesterol have diabetes.
 
-Now, let's look at the categorical variables that have more than two levels. We will first look at the age variable. Let us do the same thing we did above, but as bar plots. We will see how the percentages of people with diabetes changes across the different age groups. 
+Now, let's look at the categorical variables that have more than two levels. We will first look at the age variable. Let us do the same thing we did above, but as bar plots. We will see how the percentages of people with diabetes changes across the different age groups.
 
 ```{r}
 ageTable <- table(diabetesCat$Age, diabetesCat$Diabetes_binary) |>
@@ -164,7 +180,6 @@ ggplot(ageTable, aes(x = Age, y = Percentage, fill = Diabetes)) +
 
 From this graph, we can see that as the age category increases, a larger percentage of individuals have Diabetes. Now, let us investigate the General Health variable the same way:
 
-
 ```{r}
 genHlthTable <- table(diabetesCat$GenHlth, diabetesCat$Diabetes_binary) |>
   as.data.frame()
@@ -182,6 +197,7 @@ ggplot(genHlthTable, aes(x = GenHlth, y = Percentage, fill = Diabetes)) +
        title = "Percentage of Individuals with Diabetes for each General Health Group",
        fill = "Diabetes") 
 ```
+
 This also tells us that as our general health get's worse, the percentage of people with diabetes increases. For the last plot, let us explore the Physical Health variable:
 
 ```{r}
@@ -204,3 +220,8 @@ ggplot(physHlthTable, aes(x = PhysHlth, y = Percentage, fill = Diabetes)) +
 
 The pattern in this plot is not as noticeable as the others, but we can still see that has the number of days where your physical health was not good, the percentages of having diabetes increase.
 
+#Conclusion
+
+Through this exploratory data analysis of our data, we have investigated several variables' relationship to the response of interest - `Diabetes_binary`. Through numerical summaries and scatter plots, contingency tables and bar plots, there have been many findings. Some of the findings that we had were surprising, relative to what we would naturally expect; however, there were many findings entwine to previous knowledge about Diabetes. One of the more surprising findings that we saw had to deal with Heavy Alcohol Consumption (`HvyAlcoholConsump`). We noticed that of those who did not drink heavily, there was a "large" percentage of people with diabetes; whereas, those who did drink heavily, there was a small percentage of people with diabetes. These types of things are why EDA is so necessary when working with data. It can tell you things that you may not have expected previously, and can help strengthen your capabilities when undergoing analysis.
+
+This concept is exactly what we will be going to do, as you can head to our [Model Fitting](docs/Modeling.html) site to see how we used our EDA to build several different models.

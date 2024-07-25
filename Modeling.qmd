@@ -51,7 +51,9 @@ Below, is a list of the important variables I have identified that should be ben
 
 The purpose of this document is to apply what we have learned in the exploratory data analysis page, and build some models to try and predict whether or not an individual will have diabetes. This document will make use of three different types of models: Logistic Regression, Classification Trees, and Random Forests. The descriptions of these models will be outlined in their respective sections. To compare these models, we will use log-loss as our criteria for defining the *best* model.
 
-Let us start with our model-building process!
+We are going to be using log-loss as our criteria, instead of accuracy, as mentioned in the above paragraph. Loss-loss criteria, popularly used in binary/classification analyses, is a special form of the likelihood function, and can be used to assess performance of classification models. Unlike certain criteria (i.e., accuracy), Log-loss penalizes models more heavily when incorrectly classifying observations. This is a main reason as to why we are choosing Log-loss over accuracy.
+
+NOw, let us start with our model-building process!
 
 # Preparing the Data
 
@@ -73,6 +75,13 @@ diabetes <- as_tibble(read_csv("diabetes_binary_health_indicators_BRFSS2015.csv"
   select(Diabetes_binary, BMI, HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack,
          PhysActivity, HvyAlcoholConsump, GenHlth, PhysHlth, DiffWalk, Sex, Age)
 
+#Needed for computing probabilities
+levels(diabetes$Diabetes_binary) <- c("No", "Yes")
+
+#Specifying we will be doing 5-fold cross validation with Log Loss as criteria
+trctrl <- trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss,
+                       classProbs = TRUE)
+
 #Set seed for reproducibility
 set.seed(123)
 train <- sample(1:nrow(diabetes), size = nrow(diabetes)*0.7)
@@ -90,7 +99,8 @@ A Logistic Regression model is a type of Generalized Linear Model (GLM), that ha
 
 $$
 \textit{P(success|X)} = \frac{e^{X\beta}}{1 + e^{X\beta}}
-$$ Where *X* is the set of predictor values, and $\beta$ is the set of parameter coefficients. The model itself has no closed form solution, which leads to Maximum Likelihood often being used to fit parameters.
+$$
+Where *X* is the set of predictor values, and $\beta$ is the set of parameter coefficients. The model itself has no closed form solution, which leads to Maximum Likelihood often being used to fit parameters.
 
 If we back solve this equation, it leads us to the following formula:
 
@@ -107,15 +117,7 @@ We will be building three different logistic regression models, using our traini
 For our first model, we are going to be using all 14 *feature* variables of interest that we identified in the EDA document.
 
 ```{r}
-#Needed for computing probabilities
-diabetesLogTrain <- ifelse(diabetesTrain$Diabetes_binary == "1", "Yes", "No")
-diabetesLogTrain <- diabetesTrain |>
-  mutate(Diabetes_binary = diabetesLogTrain)
-
-trctrl <- trainControl(method = "cv", number = 10, summaryFunction = mnLogLoss,
-                       classProbs = TRUE)
-
-logOne <- train(Diabetes_binary ~ ., data = diabetesLogTrain, method = "glm", family = "binomial",
+logOne <- train(Diabetes_binary ~ ., data = diabeteTrain, method = "glm", family = "binomial",
                 trControl = trctrl, tuneLength = 10, metric = "logLoss")
 
 ```
@@ -126,7 +128,7 @@ The next model will only take the variables that had the biggest percentage of d
 
 ```{r}
 logTwo <- train(Diabetes_binary ~ HighBP + HighChol + CholCheck + Stroke + HeartDiseaseorAttack +
-                  HvyAlcoholConsump + DiffWalk, data = diabetesLogTrain, method = "glm", 
+                  HvyAlcoholConsump + DiffWalk, data = diabetesTrain, method = "glm", 
                 family = "binomial", trControl = trctrl, tuneLength = 10, metric = "logLoss")
 
 logThree$results$logLoss
@@ -137,7 +139,7 @@ logThree$results$logLoss
 The last model will only use the `HighBP` and `HighChol` variables, and will include an interaction between the two
 
 ```{r}
-logThree <- train(Diabetes_binary ~ HighBP*HighChol, data = diabetesLogTrain, method = "glm",
+logThree <- train(Diabetes_binary ~ HighBP*HighChol, data = diabetesTrain, method = "glm",
                   family = "binomial", trControl = trctrl, tuneLength = 10, metric = "logLoss")
 ```
 
@@ -164,3 +166,126 @@ As we can see from the above output, Model 1 - which contained all 14 *feature* 
 Since we have identified our "best" logistic regression model, we can now move forward with fitting a "best" classification tree model. Classification tree models are a type of tree based method with a binary response variable. We can apply this to our data, because our response of interest - `Diabetes_binary` - has values of only 0 or 1 (binary). For this method, we split up our predictor space into regions, where there are different predictions for each region. In a classification tree, our goal is to predict (classify) group membership. For a given region, we will usually use the most prevalent class as our prediction/classification.
 
 In more practical terms, we first look at all considered predictors and identify the best predictor in terms of separating the data into our two classes. After this is found, we can then begin to explore the next predictor that can do the same, and continue this process until we are capturing little to no new information.
+
+Let us do the same thing as before and build three different classification tree models with varying values of our complexity parameter, and choose the best model (one with best complexity parameter).
+
+## Model 1
+
+The first classification tree model will be the same as the first logistic regression model. It will include all 14 *feature* variables.
+
+```{r}
+classOne <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "rpart", metric = "logLoss",
+                  trControl = trctrl,
+                  tuneGrid = expand.grid(cp = seq(from = 0, to = 0.1, by = 0.001)))
+
+```
+
+## Model 2
+
+The next classification tree model will be the same as the second logistic regression model. It will include only the categorical variables that seemed to have the most impact on whether or not an individual has diabetes
+
+```{r}
+classTwo <- train(Diabetes_binary ~ HighBP + HighChol + CholCheck + Stroke + HeartDiseaseorAttack
+                  + HvyAlcoholConsump + DiffWalk, data = diabetesTrain, method = "rpart",
+                  metric = "logLoss", trControl = trctrl,
+                  tuneGrid = expand.grid(cp = seq(from = 0, to = 0.1, by = 0.001)))
+
+```
+
+## Model 3
+
+The last classification tree model will also be the same as the third logistic regression model. We will only use the `HighBP` and `HighChol` variables, and include an interaction between the two.
+
+```{r}
+classThree <- train(Diabetes_binary ~ HighBP*HighChol, data = diabetesTrain, method = "rpart",
+                    metric = "logLoss", trControl = trctrl,
+                    tuneGrid = expand.grid(cp = seq(from = 0, to = 0.1, by = 0.001)))
+```
+
+## Model Comparison
+
+Now that we have built our three classification tree models, we can now begin to compare them. We will compare them, once again, based off the one with the best Log-Loss value.
+
+```{r}
+oneMin <- min(classOne$results$logLoss)
+twoMin <- min(classTwo$results$logLoss)
+threeMin <- min(classThree$results$logLoss)
+for (i in 1:101){
+  if (classOne$results$logLoss[i] == oneMin) {
+    oneCP = classOne$results$cp[i]
+  }
+  if (classTwo$results$logLoss[i] == twoMin) {
+    twoCP = classTwo$results$cp[i]
+  }
+  if (classThree$results$logLoss[i] == threeMin) {
+    threeCP = classThree$results$cp[i]
+  }
+}
+
+paste("Log Loss Criteria Values (with cp): ")
+cat("\n")
+paste0("Model 1: ", round(oneMin, 4), " (cp = ", oneCP, ")")
+paste0("Model 2: ", round(twoMin, 4), " (cp = ", twoCP, ")")
+paste0("Model 3: ", round(threeMin, 4), " (cp = ", threeCP, ")")
+```
+As we can see, model 1 is once again the "best" model for the classification tree models. It yields the lowest log-loss value, so we will use that model when doing our final comparisons.
+
+
+# Random Forest Models
+
+The last model we will explore is the Random Forest Model. This type of model is another form of a classification tree model, that uses a special form of bagging (Bootstrap aggregation method). First, let's detail the bagging procedure. Bagging is when we take multiple subsets of our original data that we obtain by sampling with replacement (treat our original data as population). Each subset is used to train a tree, and then we find predictions for each tree. Once we have those predictions, we can then average the results.
+
+Now, the tree building process is similar to the classification tree; however, the biggest difference is that we are selecting a random subset of predictors instead of using all predictors at each "split". This prevents one or two variables from dominating the trees, and getting more diverse results. Another advantage of using this technique is that our predictions can be improved due to the decreased variance as a result of averaging. 
+
+Same as before, we will build the same three models as the above two methods, but apply them to a random forest model.
+
+## Model 1
+
+This model will include all 14 *feature* variables
+
+```{r}
+rfOne <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "rf", metric = "logLoss",
+               trControl = trctrl, 
+               tuneGrid = expand.grid(mtry = seq(1, 14)))
+```
+
+## Model 2
+
+This model will be the same as the second models from both of the previous methods. It will include only categorical variables that seemed the most important in relation to the response in the EDA site.
+
+```{r}
+rfTwo <- train(Diabetes_binary ~ HighBP + HighChol + CholCheck + Stroke + HeartDiseaseorAttack
+                  + HvyAlcoholConsump + DiffWalk, method = "rf", metric = "logLoss",
+               trControl = trctrl,
+               tuneGrid = expand.grid(mtry = seq(1, 14)))
+```
+
+## Model 3
+
+The last model will also be the same as the last models from both of the previous methods. It will only include `HighBP` and `HighChol`, as well as an interaction between the two.
+
+```{r}
+rfThree <- train(Diabetes_binary ~ HighBP*HighChol, method = "rf", metric = "logLoss",
+                 trControl = trctrl,
+                 tuneGrid = expand.grid(mtry = seq(1, 14)))
+```
+
+
+## Model Comparison
+
+Using Log-Loss criteria, we will assess the performance of each of the three Random Forest models to select a "best" model.
+
+```{r}
+
+```
+
+
+# Final Comparison
+
+Now that we have our "best" model from each of the tree model fitting methods, we will now select an "overall" best method. Once again, we will be using the Log-Loss criteria to make our selection. The one big change you will see here is that we are no longer going to be working with the training data. To help us make our decision, we will be using the testing data set to see how the three candidate models perform on new, "unseen" data.
+
+```{r}
+
+```
+
+Looking at the Log-Loss values above, we can see that the ### model yields the lowest value. Therefore, this has been identified as our "best" overall model. 
