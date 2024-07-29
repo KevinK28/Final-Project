@@ -107,3 +107,13 @@ function() {
   list(name = "Kevin Krupa (ST-558)",
        gitHubSite = "https://kevink28.github.io/Final-Project/")
 }
+
+#Function Calls
+
+#pred
+#http://127.0.0.1:8000/pred?HighBP=Yes
+#http://127.0.0.1:8000/pred?HighChol=Yes&HvyAlcoholConsump=Yes&HighBP=Yes
+#http://127.0.0.1:8000/pred?DiffWalk=Yes&Sex=Male
+
+#info
+#http://127.0.0.1:8000/info 
