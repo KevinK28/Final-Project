@@ -100,15 +100,14 @@ A Logistic Regression model is a type of Generalized Linear Model (GLM), that ha
 $$
 \textit{P(success|X)} = \frac{e^{X\beta}}{1 + e^{X\beta}}
 $$
-Where *X* is the set of predictor values, and $\beta$ is the set of parameter coefficients. The model itself has no closed form solution, which leads to Maximum Likelihood often being used to fit parameters.
+Where *X* is the set (matrix) of predictor values for every parameter, and $\beta$ is the set (vector) of parameter coefficients. The model itself has no closed form solution, which leads to Maximum Likelihood often being used to fit parameters.
 
 If we back solve this equation, it leads us to the following formula:
 
 $$
 \textit{log}(\frac{P(success|X)}{1 - P(success|X)}) = X\beta
 $$
-
-This formula shows us how we can *link* our response to the linear combination of predictors $X\beta$. We must be careful, however, because setting up our model this way greatly influences the interpretation of our coefficients. Each $\beta$ coefficient now represents the change in log-odds of success, which can then be coerced into odds (by taking its exponential) to see how the odds of success changes as we can increase the value of its corresponding predictor by one unit/level.
+This formula shows us how we can *link* our response to the linear combination of predictors $X\beta$ ($X$ and $\beta$ can be interpreted the same as in previous formula). We must be careful, however, because setting up our model this way greatly influences the interpretation of our coefficients. Each $\beta$ coefficient now represents the change in log-odds of success, which can then be coerced into odds (by taking its exponential) to see how the odds of success changes as we can increase the value of its corresponding predictor by one unit/level.
 
 We will be building three different logistic regression models, using our training data set, and then evaluate each on the test set to identify the "best" option out of the three
 
@@ -117,7 +116,7 @@ We will be building three different logistic regression models, using our traini
 For our first model, we are going to be using all 14 *feature* variables of interest that we identified in the EDA document.
 
 ```{r}
-logOne <- train(Diabetes_binary ~ ., data = diabeteTrain, method = "glm", family = "binomial",
+logOne <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "glm", family = "binomial",
                 trControl = trctrl, tuneLength = 10, metric = "logLoss")
 
 ```
@@ -131,7 +130,6 @@ logTwo <- train(Diabetes_binary ~ HighBP + HighChol + CholCheck + Stroke + Heart
                   HvyAlcoholConsump + DiffWalk, data = diabetesTrain, method = "glm", 
                 family = "binomial", trControl = trctrl, tuneLength = 10, metric = "logLoss")
 
-logThree$results$logLoss
 ```
 
 ## Model 3
@@ -228,64 +226,60 @@ paste0("Model 1: ", round(oneMin, 4), " (cp = ", oneCP, ")")
 paste0("Model 2: ", round(twoMin, 4), " (cp = ", twoCP, ")")
 paste0("Model 3: ", round(threeMin, 4), " (cp = ", threeCP, ")")
 ```
-As we can see, model 1 is once again the "best" model for the classification tree models. It yields the lowest log-loss value, so we will use that model when doing our final comparisons.
 
+As we can see, model 1 is once again the "best" model for the classification tree models. It yields the lowest log-loss value, so we will use that model when doing our final comparisons.
 
 # Random Forest Models
 
 The last model we will explore is the Random Forest Model. This type of model is another form of a classification tree model, that uses a special form of bagging (Bootstrap aggregation method). First, let's detail the bagging procedure. Bagging is when we take multiple subsets of our original data that we obtain by sampling with replacement (treat our original data as population). Each subset is used to train a tree, and then we find predictions for each tree. Once we have those predictions, we can then average the results.
 
-Now, the tree building process is similar to the classification tree; however, the biggest difference is that we are selecting a random subset of predictors instead of using all predictors at each "split". This prevents one or two variables from dominating the trees, and getting more diverse results. Another advantage of using this technique is that our predictions can be improved due to the decreased variance as a result of averaging. 
+Now, the tree building process is similar to the classification tree; however, the biggest difference is that we are selecting a random subset of predictors instead of using all predictors at each "split". This prevents one or two variables from dominating the trees, and getting more diverse results. Another advantage of using this technique is that our predictions can be improved due to the decreased variance as a result of averaging.
 
-Same as before, we will build the same three models as the above two methods, but apply them to a random forest model.
+Instead of looking at three different types of base models, we will examine one model and select the best Random Forest model from that.
 
-## Model 1
-
-This model will include all 14 *feature* variables
+The Model will also be the same as the last models from both of the previous methods. It will only include `HighBP` and `HighChol`, as well as an interaction between the two.
 
 ```{r}
-rfOne <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "rf", metric = "logLoss",
-               trControl = trctrl, 
-               tuneGrid = expand.grid(mtry = seq(1, 14)))
-```
-
-## Model 2
-
-This model will be the same as the second models from both of the previous methods. It will include only categorical variables that seemed the most important in relation to the response in the EDA site.
-
-```{r}
-rfTwo <- train(Diabetes_binary ~ HighBP + HighChol + CholCheck + Stroke + HeartDiseaseorAttack
-                  + HvyAlcoholConsump + DiffWalk, method = "rf", metric = "logLoss",
-               trControl = trctrl,
-               tuneGrid = expand.grid(mtry = seq(1, 14)))
-```
-
-## Model 3
-
-The last model will also be the same as the last models from both of the previous methods. It will only include `HighBP` and `HighChol`, as well as an interaction between the two.
-
-```{r}
-rfThree <- train(Diabetes_binary ~ HighBP*HighChol, method = "rf", metric = "logLoss",
+library(ranger)
+rfThree <- train(Diabetes_binary ~ HighBP*HighChol, data = diabetesTrain, method = "ranger", metric = "logLoss",
                  trControl = trctrl,
-                 tuneGrid = expand.grid(mtry = seq(1, 14)))
+                 tuneLength = 3)
 ```
 
 
-## Model Comparison
-
-Using Log-Loss criteria, we will assess the performance of each of the three Random Forest models to select a "best" model.
+Using Log-Loss criteria, we will find the lowest value and select that model to be used in the final comparison:
 
 ```{r}
+rfThreeLL <- min(rfThree$results$logLoss)
 
+paste("Log Loss Criteria Value: ")
+cat("\n")
+paste0(round(rfThreeLL, 4), " (mtry = 3)")
 ```
-
 
 # Final Comparison
 
-Now that we have our "best" model from each of the tree model fitting methods, we will now select an "overall" best method. Once again, we will be using the Log-Loss criteria to make our selection. The one big change you will see here is that we are no longer going to be working with the training data. To help us make our decision, we will be using the testing data set to see how the three candidate models perform on new, "unseen" data.
+Now that we have our "best" model from each of the model fitting methods, we will now select an "overall" best method. Once again, we will be using the Log-Loss criteria to make our selection. The one big change you will see here is that we are no longer going to be working with the training data. To help us make our decision, we will be using the testing data set to see how the three candidate models perform on new, "unseen" data.
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
+#Acquire Log-Loss Values on Testing set
+logPred <- predict(logOne, diabetesTest, type = "prob")
+classPred <- predict(classOne, diabetesTest, type = "prob")
+rfPred <- predict(rfThree, diabetesTest, type = "prob")
 
+diabetesTestLL <- ifelse(diabetesTest$Diabetes_binary == "Yes", 1, 0)
+
+#Needed package for logLoss function
+library(Metrics)
+logLL <- logLoss(diabetesTestLL, logPred$Yes)
+classLL <- logLoss(diabetesTestLL, classPred$Yes)
+rfLL <- logLoss(diabetesTestLL, rfPred$Yes)
+
+paste("Final Log-Loss Comparison values:")
+cat("\n")
+paste("Logistic Regression Model:", round(logLL, 4))
+paste("Classification Tree Model:", round(classLL, 4))
+paste("Random Forest Tree Model :", round(rfLL, 4))
 ```
 
-Looking at the Log-Loss values above, we can see that the ### model yields the lowest value. Therefore, this has been identified as our "best" overall model. 
+Looking at the Log-Loss values above, we can see that the Logistic Regression model yields the lowest value. Therefore, this has been identified as our "best" overall model.

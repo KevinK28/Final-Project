@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -60,6 +94,8 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -125,12 +161,258 @@ ul.task-list li input[type="checkbox"] {
 </ol>
 </section>
 </section>
-<section id="purpose" class="level2">
-<h2 class="anchored" data-anchor-id="purpose">Purpose</h2>
-<p>The purpose of this document is to apply what we have learned in the exploratory data analysis page</p>
-
-
+<section id="purp" class="level2">
+<h2 class="anchored" data-anchor-id="purp">Purpose</h2>
+<p>The purpose of this document is to apply what we have learned in the exploratory data analysis page, and build some models to try and predict whether or not an individual will have diabetes. This document will make use of three different types of models: Logistic Regression, Classification Trees, and Random Forests. The descriptions of these models will be outlined in their respective sections. To compare these models, we will use log-loss as our criteria for defining the <em>best</em> model.</p>
+<p>We are going to be using log-loss as our criteria, instead of accuracy, as mentioned in the above paragraph. Loss-loss criteria, popularly used in binary/classification analyses, is a special form of the likelihood function, and can be used to assess performance of classification models. Unlike certain criteria (i.e., accuracy), Log-loss penalizes models more heavily when incorrectly classifying observations. This is a main reason as to why we are choosing Log-loss over accuracy.</p>
+<p>NOw, let us start with our model-building process!</p>
 </section>
+</section>
+<section id="preparing-the-data" class="level1">
+<h1>Preparing the Data</h1>
+<p>For the exploratory data analysis, we used the entirety of the data; however, things will be a little different here. To prepare for our model building, we will first obtain the data (only including the 15 needed variables) and then split it into a training/test set. The training set will hold 70% of the observations, whereas the testing set will include the other 30%. Splitting the data this way will help us see how our models perform on “new” data, that it has not seen before. It is a more beneficial way in looking at the robustness of our models, and provides a more realistic setting for assessment of the models generalization ability.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>diabetes <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(<span class="fu">read_csv</span>(<span class="st">"diabetes_binary_health_indicators_BRFSS2015.csv"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> <span class="fu">as.factor</span>(Diabetes_binary), <span class="at">HighBP =</span> <span class="fu">as.factor</span>(HighBP),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">HighChol =</span> <span class="fu">as.factor</span>(HighChol), <span class="at">CholCheck =</span> <span class="fu">as.factor</span>(CholCheck),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">Smoker =</span> <span class="fu">as.factor</span>(Smoker), <span class="at">Stroke =</span> <span class="fu">as.factor</span>(Stroke),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">HeartDiseaseorAttack =</span> <span class="fu">as.factor</span>(HeartDiseaseorAttack),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">PhysActivity =</span> <span class="fu">as.factor</span>(PhysActivity), <span class="at">HvyAlcoholConsump =</span> <span class="fu">as.factor</span>(HvyAlcoholConsump),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">GenHlth =</span> <span class="fu">as.factor</span>(GenHlth), <span class="at">PhysHlth =</span> <span class="fu">as.factor</span>(PhysHlth),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">DiffWalk =</span> <span class="fu">as.factor</span>(DiffWalk), <span class="at">Sex =</span> <span class="fu">as.factor</span>(Sex),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">Age =</span> <span class="fu">as.factor</span>(Age)) <span class="sc">|&gt;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Diabetes_binary, BMI, HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         PhysActivity, HvyAlcoholConsump, GenHlth, PhysHlth, DiffWalk, Sex, Age)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#Needed for computing probabilities</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes<span class="sc">$</span>Diabetes_binary) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"No"</span>, <span class="st">"Yes"</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">#Specifying we will be doing 5-fold cross validation with Log Loss as criteria</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>trctrl <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">5</span>, <span class="at">summaryFunction =</span> mnLogLoss,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>                       <span class="at">classProbs =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(diabetes), <span class="at">size =</span> <span class="fu">nrow</span>(diabetes)<span class="sc">*</span><span class="fl">0.7</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>test  <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(diabetes), train)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>diabetesTrain <span class="ot">&lt;-</span> diabetes[train,]</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>diabetesTest <span class="ot">&lt;-</span> diabetes[test,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now that we have our training and testing data sets, we can begin to build are models.</p>
+</section>
+<section id="logistic-regression-model" class="level1">
+<h1>Logistic Regression Model</h1>
+<p>A Logistic Regression model is a type of Generalized Linear Model (GLM), that has a response variable that is binary in nature. A binary response variable is one that has values like, success/failure, yes/no, 0/1, etc. Our response of interest, <code>Diabetes_binary</code>, is of course binary in nature due to it having values of only 0 or 1. Logistic regression models the average number of “successes” for a given set of predictor values (or probability of success). These predictions are always between 0 and 1, and we set this prediction function as:</p>
+<p><span class="math display">\[
+\textit{P(success|X)} = \frac{e^{X\beta}}{1 + e^{X\beta}}
+\]</span> Where <em>X</em> is the set (matrix) of predictor values for every parameter, and <span class="math inline">\(\beta\)</span> is the set (vector) of parameter coefficients. The model itself has no closed form solution, which leads to Maximum Likelihood often being used to fit parameters.</p>
+<p>If we back solve this equation, it leads us to the following formula:</p>
+<p><span class="math display">\[
+\textit{log}(\frac{P(success|X)}{1 - P(success|X)}) = X\beta
+\]</span> This formula shows us how we can <em>link</em> our response to the linear combination of predictors <span class="math inline">\(X\beta\)</span> (<span class="math inline">\(X\)</span> and <span class="math inline">\(\beta\)</span> can be interpreted the same as in previous formula). We must be careful, however, because setting up our model this way greatly influences the interpretation of our coefficients. Each <span class="math inline">\(\beta\)</span> coefficient now represents the change in log-odds of success, which can then be coerced into odds (by taking its exponential) to see how the odds of success changes as we can increase the value of its corresponding predictor by one unit/level.</p>
+<p>We will be building three different logistic regression models, using our training data set, and then evaluate each on the test set to identify the “best” option out of the three</p>
+<section id="model-1" class="level2">
+<h2 class="anchored" data-anchor-id="model-1">Model 1</h2>
+<p>For our first model, we are going to be using all 14 <em>feature</em> variables of interest that we identified in the EDA document.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>logOne <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"glm"</span>, <span class="at">family =</span> <span class="st">"binomial"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">trControl =</span> trctrl, <span class="at">tuneLength =</span> <span class="dv">10</span>, <span class="at">metric =</span> <span class="st">"logLoss"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-2" class="level2">
+<h2 class="anchored" data-anchor-id="model-2">Model 2</h2>
+<p>The next model will only take the variables that had the biggest percentage of diabetes differences between levels, and will not include the BMI variable</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>logTwo <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP <span class="sc">+</span> HighChol <span class="sc">+</span> CholCheck <span class="sc">+</span> Stroke <span class="sc">+</span> HeartDiseaseorAttack <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                  HvyAlcoholConsump <span class="sc">+</span> DiffWalk, <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"glm"</span>, </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">family =</span> <span class="st">"binomial"</span>, <span class="at">trControl =</span> trctrl, <span class="at">tuneLength =</span> <span class="dv">10</span>, <span class="at">metric =</span> <span class="st">"logLoss"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-3" class="level2">
+<h2 class="anchored" data-anchor-id="model-3">Model 3</h2>
+<p>The last model will only use the <code>HighBP</code> and <code>HighChol</code> variables, and will include an interaction between the two</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>logThree <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP<span class="sc">*</span>HighChol, <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"glm"</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">"binomial"</span>, <span class="at">trControl =</span> trctrl, <span class="at">tuneLength =</span> <span class="dv">10</span>, <span class="at">metric =</span> <span class="st">"logLoss"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="model-comparison">Model Comparison</h2>
+<p>As we mentioned in the <a href="#purp">Purpose</a> section, we will be using Log-Loss as our criteria for selecting the best model. Therefore, we will find the log loss value for each of the three models and see which model yields the lowest values. That model will be our “best” logistic regression model candidate</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>logLossOne <span class="ot">&lt;-</span> <span class="fu">round</span>(logOne<span class="sc">$</span>results<span class="sc">$</span>logLoss, <span class="dv">4</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>logLossTwo <span class="ot">&lt;-</span> <span class="fu">round</span>(logTwo<span class="sc">$</span>results<span class="sc">$</span>logLoss, <span class="dv">4</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>logLossThree <span class="ot">&lt;-</span> <span class="fu">round</span>(logThree<span class="sc">$</span>results<span class="sc">$</span>logLoss, <span class="dv">4</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Log Loss Criteria Values:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Log Loss Criteria Values:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Model 1:"</span>, logLossOne)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model 1: 0.3177"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Model 2:"</span>, logLossTwo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model 2: 0.3453"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Model 3:"</span>, logLossThree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model 3: 0.3597"</code></pre>
+</div>
+</div>
+<p>As we can see from the above output, Model 1 - which contained all 14 <em>feature</em> variables - has the smallest Log-Loss value. This means that Model 1 is our “best” model, and we will use it to compare against the “best” classification tree model and random forest model.</p>
+</section>
+</section>
+<section id="classification-tree-models" class="level1">
+<h1>Classification Tree Models</h1>
+<p>Since we have identified our “best” logistic regression model, we can now move forward with fitting a “best” classification tree model. Classification tree models are a type of tree based method with a binary response variable. We can apply this to our data, because our response of interest - <code>Diabetes_binary</code> - has values of only 0 or 1 (binary). For this method, we split up our predictor space into regions, where there are different predictions for each region. In a classification tree, our goal is to predict (classify) group membership. For a given region, we will usually use the most prevalent class as our prediction/classification.</p>
+<p>In more practical terms, we first look at all considered predictors and identify the best predictor in terms of separating the data into our two classes. After this is found, we can then begin to explore the next predictor that can do the same, and continue this process until we are capturing little to no new information.</p>
+<p>Let us do the same thing as before and build three different classification tree models with varying values of our complexity parameter, and choose the best model (one with best complexity parameter).</p>
+<section id="model-1-1" class="level2">
+<h2 class="anchored" data-anchor-id="model-1-1">Model 1</h2>
+<p>The first classification tree model will be the same as the first logistic regression model. It will include all 14 <em>feature</em> variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>classOne <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"rpart"</span>, <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> trctrl,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">cp =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="fl">0.1</span>, <span class="at">by =</span> <span class="fl">0.001</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-2-1" class="level2">
+<h2 class="anchored" data-anchor-id="model-2-1">Model 2</h2>
+<p>The next classification tree model will be the same as the second logistic regression model. It will include only the categorical variables that seemed to have the most impact on whether or not an individual has diabetes</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>classTwo <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP <span class="sc">+</span> HighChol <span class="sc">+</span> CholCheck <span class="sc">+</span> Stroke <span class="sc">+</span> HeartDiseaseorAttack</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                  <span class="sc">+</span> HvyAlcoholConsump <span class="sc">+</span> DiffWalk, <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"rpart"</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>, <span class="at">trControl =</span> trctrl,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">cp =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="fl">0.1</span>, <span class="at">by =</span> <span class="fl">0.001</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-3-1" class="level2">
+<h2 class="anchored" data-anchor-id="model-3-1">Model 3</h2>
+<p>The last classification tree model will also be the same as the third logistic regression model. We will only use the <code>HighBP</code> and <code>HighChol</code> variables, and include an interaction between the two.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>classThree <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP<span class="sc">*</span>HighChol, <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"rpart"</span>,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">metric =</span> <span class="st">"logLoss"</span>, <span class="at">trControl =</span> trctrl,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">cp =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="fl">0.1</span>, <span class="at">by =</span> <span class="fl">0.001</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-comparison-1" class="level2">
+<h2 class="anchored" data-anchor-id="model-comparison-1">Model Comparison</h2>
+<p>Now that we have built our three classification tree models, we can now begin to compare them. We will compare them, once again, based off the one with the best Log-Loss value.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>oneMin <span class="ot">&lt;-</span> <span class="fu">min</span>(classOne<span class="sc">$</span>results<span class="sc">$</span>logLoss)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>twoMin <span class="ot">&lt;-</span> <span class="fu">min</span>(classTwo<span class="sc">$</span>results<span class="sc">$</span>logLoss)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>threeMin <span class="ot">&lt;-</span> <span class="fu">min</span>(classThree<span class="sc">$</span>results<span class="sc">$</span>logLoss)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">101</span>){</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (classOne<span class="sc">$</span>results<span class="sc">$</span>logLoss[i] <span class="sc">==</span> oneMin) {</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    oneCP <span class="ot">=</span> classOne<span class="sc">$</span>results<span class="sc">$</span>cp[i]</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (classTwo<span class="sc">$</span>results<span class="sc">$</span>logLoss[i] <span class="sc">==</span> twoMin) {</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    twoCP <span class="ot">=</span> classTwo<span class="sc">$</span>results<span class="sc">$</span>cp[i]</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (classThree<span class="sc">$</span>results<span class="sc">$</span>logLoss[i] <span class="sc">==</span> threeMin) {</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    threeCP <span class="ot">=</span> classThree<span class="sc">$</span>results<span class="sc">$</span>cp[i]</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Log Loss Criteria Values (with cp): "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Log Loss Criteria Values (with cp): "</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="st">"Model 1: "</span>, <span class="fu">round</span>(oneMin, <span class="dv">4</span>), <span class="st">" (cp = "</span>, oneCP, <span class="st">")"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model 1: 0.3565 (cp = 0.001)"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="st">"Model 2: "</span>, <span class="fu">round</span>(twoMin, <span class="dv">4</span>), <span class="st">" (cp = "</span>, twoCP, <span class="st">")"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model 2: 0.3599 (cp = 0)"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="st">"Model 3: "</span>, <span class="fu">round</span>(threeMin, <span class="dv">4</span>), <span class="st">" (cp = "</span>, threeCP, <span class="st">")"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model 3: 0.4032 (cp = 0.1)"</code></pre>
+</div>
+</div>
+<p>As we can see, model 1 is once again the “best” model for the classification tree models. It yields the lowest log-loss value, so we will use that model when doing our final comparisons.</p>
+</section>
+</section>
+<section id="random-forest-models" class="level1">
+<h1>Random Forest Models</h1>
+<p>The last model we will explore is the Random Forest Model. This type of model is another form of a classification tree model, that uses a special form of bagging (Bootstrap aggregation method). First, let’s detail the bagging procedure. Bagging is when we take multiple subsets of our original data that we obtain by sampling with replacement (treat our original data as population). Each subset is used to train a tree, and then we find predictions for each tree. Once we have those predictions, we can then average the results.</p>
+<p>Now, the tree building process is similar to the classification tree; however, the biggest difference is that we are selecting a random subset of predictors instead of using all predictors at each “split”. This prevents one or two variables from dominating the trees, and getting more diverse results. Another advantage of using this technique is that our predictions can be improved due to the decreased variance as a result of averaging.</p>
+<p>Instead of looking at three different types of base models, we will examine one model and select the best Random Forest model from that.</p>
+<p>The Model will also be the same as the last models from both of the previous methods. It will only include <code>HighBP</code> and <code>HighChol</code>, as well as an interaction between the two.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ranger)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ranger' was built under R version 4.3.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>rfThree <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP<span class="sc">*</span>HighChol, <span class="at">data =</span> diabetesTrain, <span class="at">method =</span> <span class="st">"ranger"</span>, <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl =</span> trctrl,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tuneLength =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>note: only 2 unique complexity parameters in default grid. Truncating the grid to 2 .</code></pre>
+</div>
+</div>
+<p>Using Log-Loss criteria, we will find the lowest value and select that model to be used in the final comparison:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>rfThreeLL <span class="ot">&lt;-</span> <span class="fu">min</span>(rfThree<span class="sc">$</span>results<span class="sc">$</span>logLoss)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Log Loss Criteria Value: "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Log Loss Criteria Value: "</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="fu">round</span>(rfThreeLL, <span class="dv">4</span>), <span class="st">" (mtry = 3)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "0.3597 (mtry = 3)"</code></pre>
+</div>
+</div>
+</section>
+<section id="final-comparison" class="level1">
+<h1>Final Comparison</h1>
+<p>Now that we have our “best” model from each of the model fitting methods, we will now select an “overall” best method. Once again, we will be using the Log-Loss criteria to make our selection. The one big change you will see here is that we are no longer going to be working with the training data. To help us make our decision, we will be using the testing data set to see how the three candidate models perform on new, “unseen” data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Acquire Log-Loss Values on Testing set</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>logPred <span class="ot">&lt;-</span> <span class="fu">predict</span>(logOne, diabetesTest, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>classPred <span class="ot">&lt;-</span> <span class="fu">predict</span>(classOne, diabetesTest, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>rfPred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfThree, diabetesTest, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>diabetesTestLL <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(diabetesTest<span class="sc">$</span>Diabetes_binary <span class="sc">==</span> <span class="st">"Yes"</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Needed package for logLoss function</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Metrics)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>logLL <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(diabetesTestLL, logPred<span class="sc">$</span>Yes)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>classLL <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(diabetesTestLL, classPred<span class="sc">$</span>Yes)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>rfLL <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(diabetesTestLL, rfPred<span class="sc">$</span>Yes)</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Final Log-Loss Comparison values:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Final Log-Loss Comparison values:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Logistic Regression Model:"</span>, <span class="fu">round</span>(logLL, <span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Logistic Regression Model: 0.3195"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Classification Tree Model:"</span>, <span class="fu">round</span>(classLL, <span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Classification Tree Model: 0.3586"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Random Forest Tree Model :"</span>, <span class="fu">round</span>(rfLL, <span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Random Forest Tree Model : 0.3611"</code></pre>
+</div>
+</div>
+<p>Looking at the Log-Loss values above, we can see that the Logistic Regression model yields the lowest value. Therefore, this has been identified as our “best” overall model.</p>
+
+
 </section>
 
 </main> <!-- /main -->

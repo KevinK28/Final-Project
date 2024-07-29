@@ -156,7 +156,7 @@ for (i in names(results)) {
 }
 ```
 
-Looking at the above data sets, we can see that there are some variables that should influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only \~8% of individuals without high cholesterol have diabetes.
+Looking at the above data sets, we can see that there are some variables that should influence whether or not an individual has diabetes. One of the more interesting findings that we see here is in the `HvyAlcoholConsump` data set. Those who do not drink heavily have a larger percentage of diabetes than those who do drink heavily. There are also some findings that are inline with what we would expect. For example, 22% of individuals with high cholesterol also have diabetes, whereas only ~8% of individuals without high cholesterol have diabetes.
 
 Now, let's look at the categorical variables that have more than two levels. We will first look at the age variable. Let us do the same thing we did above, but as bar plots. We will see how the percentages of people with diabetes changes across the different age groups.
 
@@ -178,7 +178,7 @@ ggplot(ageTable, aes(x = Age, y = Percentage, fill = Diabetes)) +
        fill = "Diabetes") 
 ```
 
-From this graph, we can see that as the age category increases, a larger percentage of individuals have Diabetes. Now, let us investigate the General Health variable the same way:
+From this graph, we can see that as we increase our age category, a larger percentage of individuals have Diabetes. Now, let us investigate the General Health variable the same way:
 
 ```{r}
 genHlthTable <- table(diabetesCat$GenHlth, diabetesCat$Diabetes_binary) |>
@@ -198,7 +198,7 @@ ggplot(genHlthTable, aes(x = GenHlth, y = Percentage, fill = Diabetes)) +
        fill = "Diabetes") 
 ```
 
-This also tells us that as our general health get's worse, the percentage of people with diabetes increases. For the last plot, let us explore the Physical Health variable:
+This also tells us that as our general health gets worse, the percentage of people with diabetes increases. For the last plot, let us explore the Physical Health variable:
 
 ```{r}
 physHlthTable <- table(diabetesCat$PhysHlth, diabetesCat$Diabetes_binary) |>
